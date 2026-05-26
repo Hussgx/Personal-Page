@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Radial Portfolio Menu</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f4;
+      --text-primary: #1a1a1a;
+      --text-secondary: #6b6b6b;
+      --border-tertiary: rgba(0,0,0,0.12);
+      --border-secondary: rgba(0,0,0,0.22);
+      --border-primary: rgba(0,0,0,0.35);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1c1c1c;
+        --bg-secondary: #2a2a2a;
+        --text-primary: #f0f0f0;
+        --text-secondary: #9a9a9a;
+        --border-tertiary: rgba(255,255,255,0.12);
+        --border-secondary: rgba(255,255,255,0.22);
+        --border-primary: rgba(255,255,255,0.35);
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-secondary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scene {
+      width: 100%;
+      min-height: 520px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .radial-menu {
+      position: relative;
+      width: 420px;
+      height: 420px;
+    }
+
+    .center-btn {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: none;
+      cursor: pointer;
+      font-size: 10px;
+      padding: 0 8px;
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), background 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .center-btn.open {
+      transform: translate(-50%, -50%) rotate(45deg) scale(1.08);
+    }
+
+    .center-btn:hover { transform: translate(-50%, -50%) scale(1.08); }
+    .center-btn.open:hover { transform: translate(-50%, -50%) rotate(45deg) scale(1.12); }
+
+    .option-node {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border-secondary);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-primary);
+      text-align: center;
+      line-height: 1.2;
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+      transition:
+        transform 0.45s cubic-bezier(0.34,1.56,0.64,1),
+        opacity 0.3s ease,
+        background 0.2s,
+        border-color 0.2s;
+      z-index: 5;
+      text-decoration: none;
+    }
+
+    .option-node i {
+      font-size: 20px;
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+
+    .option-node:hover {
+      background: var(--bg-secondary);
+      border-color: var(--border-primary);
+    }
+    .option-node:hover i { color: var(--text-primary); }
+
+    .option-node.visible {
+      transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(1);
+      opacity: 1;
+    }
+
+    .connector {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 2px;
+      background: var(--border-tertiary);
+      transform-origin: top center;
+      transform: translate(-50%, 0) scaleY(0);
+      opacity: 0;
+      transition: transform 0.35s ease 0.1s, opacity 0.3s ease 0.1s;
+      z-index: 1;
+      border-radius: 1px;
+    }
+
+    .connector.visible {
+      transform: translate(-50%, 0) scaleY(1);
+      opacity: 1;
+    }
+
+    /* Pages */
+    .page {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      align-items: center; justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      animation: fadeIn 0.35s ease;
+    }
+    .page.active { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-inner {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border-tertiary);
+      border-radius: var(--radius-lg);
+      padding: 2rem 2.5rem;
+      width: 340px;
+      text-align: center;
+    }
+
+    .page-inner h2 {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .page-inner p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .back-btn {
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: none;
+      border: 0.5px solid var(--border-tertiary);
+      border-radius: 20px;
+      padding: 6px 16px;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .back-btn:hover { color: var(--text-primary); border-color: var(--border-primary); }
+
+    .page-icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+<div class="scene" id="scene">
+
+  <div class="radial-menu" id="menu">
+    <button class="center-btn" id="centerBtn" onclick="toggleMenu()">Click for details</button>
+  </div>
+
+  <div class="page" id="page-about">
+    <div class="page-inner">
+      <div class="page-icon"><i class="ti ti-user"></i></div>
+      <h2>About</h2>
+      <p>A teen python, HTML programmer with some experience at different languages that has a passion for learning and creating. I enjoy building projects that challenge me and allow me to grow my skills.</p>
+    </div>
+    <button class="back-btn" onclick="goBack()"><i class="ti ti-arrow-left"></i> Back</button>
+  </div>
+
+   <div class="page" id="page-socials">
+    <div class="page-inner">
+      <div class="page-icon"><i class="ti ti-share"></i></div>
+      <h2>Socials</h2>
+      <p>Find me online — Gaming , Coding or Just Chilling <a href="https://linktr.ee/bennasser" target="_blank" rel="noopener noreferrer">Linktree</a></p>
+    </div>
+    <button class="back-btn" onclick="goBack()"><i class="ti ti-arrow-left"></i> Back</button>
+  </div>
+
+  <div class="page" id="page-contact">
+    <div class="page-inner">
+      <div class="page-icon"><i class="ti ti-mail"></i></div>
+      <h2>Contact</h2>
+      <p>Open for collaborations, freelance work, and interesting conversations , You can reach me at the email <a href="mailto:alostorahuss@gmail.com">alostorahuss@gmail.com</a> for anything.</p>
+    </div>
+    <button class="back-btn" onclick="goBack()"><i class="ti ti-arrow-left"></i> Back</button>
+  </div>
+
+  <div class="page" id="page-cv">
+    <div class="page-inner">
+      <div class="page-icon"><i class="ti ti-file-cv"></i></div>
+      <h2>CV</h2>
+      <p>My experience, education, and skills — all in one place. Available to download or view <a href="https://docs.google.com/document/d/1zhCQQcR-pXaIT6aTJWDU_eGMyFfIOKJU-X2ZfB3hWfA/edit?usp=sharing" target="_blank" rel="noopener noreferrer">CV</a>.</p>
+    </div>
+    <button class="back-btn" onclick="goBack()"><i class="ti ti-arrow-left"></i> Back</button>
+  </div>
+
+  <div class="page" id="page-projects">
+    <div class="page-inner">
+      <div class="page-icon"><i class="ti ti-layout-grid"></i></div>
+      <h2>Portofolio (Detailed)</h2>
+      <p>click <a href="https://adventurous-money-9ff.notion.site/Detailed-Portofolio-2cd108d7121880109959c0086f79622b?source=copy_link" target="_blank" rel="noopener noreferrer">here</a> to view my detailed portfolio.</p>
+    </div>
+    <button class="back-btn" onclick="goBack()"><i class="ti ti-arrow-left"></i> Back</button>
+  </div>
+
+</div>
+
+<script>
+  const items = [
+    { id: 'about',    label: 'About',    icon: 'ti-user',        angleDeg: 270 },
+    { id: 'socials',  label: 'Socials',  icon: 'ti-share',       angleDeg: 342 },
+    { id: 'contact',  label: 'Contact',  icon: 'ti-mail',        angleDeg: 54  },
+    { id: 'cv',       label: 'CV',       icon: 'ti-file-cv',     angleDeg: 126 },
+    { id: 'projects', label: 'Portfolio', icon: 'ti-layout-grid', angleDeg: 198 },
+  ];
+
+  const RADIUS = 155;
+  let isOpen = false;
+  const menu = document.getElementById('menu');
+  const centerBtn = document.getElementById('centerBtn');
+
+  function buildMenu() {
+    items.forEach((item) => {
+      const rad = (item.angleDeg - 90) * Math.PI / 180;
+      const tx = Math.cos(rad) * RADIUS;
+      const ty = Math.sin(rad) * RADIUS;
+
+      const connLen = RADIUS - 45;
+      const conn = document.createElement('div');
+      conn.className = 'connector';
+      conn.id = 'conn-' + item.id;
+      conn.style.height = connLen + 'px';
+      conn.style.transformOrigin = 'top center';
+      conn.style.transform = `translate(-50%, 0) rotate(${item.angleDeg}deg) scaleY(0)`;
+      conn.dataset.angle = item.angleDeg;
+      menu.appendChild(conn);
+
+      const node = document.createElement('a');
+      node.className = 'option-node';
+      node.id = 'node-' + item.id;
+      node.href = '#';
+      node.style.setProperty('--tx', tx + 'px');
+      node.style.setProperty('--ty', ty + 'px');
+      node.innerHTML = `<i class="ti ${item.icon}"></i><span>${item.label}</span>`;
+      node.addEventListener('click', (e) => { e.preventDefault(); openPage(item.id); });
+      menu.appendChild(node);
+    });
+  }
+
+  function toggleMenu() {
+    isOpen = !isOpen;
+    centerBtn.classList.toggle('open', isOpen);
+    centerBtn.textContent = isOpen ? '✕' : 'Click for details';
+
+    items.forEach((item, i) => {
+      const node = document.getElementById('node-' + item.id);
+      const conn = document.getElementById('conn-' + item.id);
+      const delay = isOpen ? i * 55 : (items.length - 1 - i) * 40;
+
+      setTimeout(() => {
+        if (isOpen) {
+          node.classList.add('visible');
+          conn.style.transition = `transform 0.35s ease, opacity 0.3s ease`;
+          conn.style.transform = `translate(-50%, 0) rotate(${conn.dataset.angle}deg) scaleY(1)`;
+          conn.style.opacity = '1';
+        } else {
+          node.classList.remove('visible');
+          conn.style.transform = `translate(-50%, 0) rotate(${conn.dataset.angle}deg) scaleY(0)`;
+          conn.style.opacity = '0';
+        }
+      }, delay);
+    });
+  }
+
+  function openPage(id) {
+    document.querySelector('.radial-menu').style.display = 'none';
+    document.getElementById('page-' + id).classList.add('active');
+    isOpen = false;
+  }
+
+  function goBack() {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelector('.radial-menu').style.display = '';
+
+    items.forEach(item => {
+      document.getElementById('node-' + item.id).classList.remove('visible');
+      const conn = document.getElementById('conn-' + item.id);
+      conn.style.transform = `translate(-50%, 0) rotate(${conn.dataset.angle}deg) scaleY(0)`;
+      conn.style.opacity = '0';
+    });
+    centerBtn.classList.remove('open');
+    centerBtn.textContent = 'Click for details';
+    isOpen = false;
+  }
+
+  buildMenu();
+</script>
+
+</body>
+</html>

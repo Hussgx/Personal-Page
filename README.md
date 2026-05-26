@@ -5,3 +5,9 @@
 # Also my socials to follow up
 # My portofolio too
 # Want you to try and see
+**This is a page consisting of**
+-About me 
+-Socials
+-CV
+-Portofolio
+-Contact me
